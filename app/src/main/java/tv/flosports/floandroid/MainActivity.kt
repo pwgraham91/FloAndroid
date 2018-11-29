@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.support.design.widget.BottomNavigationView
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.RecyclerView
 import kotlinx.android.synthetic.main.activity_main.*
 import org.jetbrains.anko.doAsync
 import org.json.JSONObject
@@ -73,15 +74,28 @@ class MainActivity : AppCompatActivity() {
         false
     }
 
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var viewAdapter: RecyclerView.Adapter<*>
+    private lateinit var viewManager: RecyclerView.LayoutManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val events: ArrayList<String> = arrayListOf("a", "b", "c")
-        rv_events_list.layoutManager = LinearLayoutManager(this)
-        rv_events_list.adapter = EventAdapter(events, this)
-        println("adapted!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        setContentView(R.layout.activity_main)
+        viewManager = LinearLayoutManager(this)
+        viewAdapter = MyAdapter(myDataset)
 
+        recyclerView = findViewById<RecyclerView>(R.id.my_recycler_view).apply {
+            // use this setting to improve performance if you know that changes
+            // in content do not change the layout size of the RecyclerView
+            setHasFixedSize(true)
+
+            // use a linear layout manager
+            layoutManager = viewManager
+
+            // specify an viewAdapter (see also next example)
+            adapter = viewAdapter
+
+        }
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
 
         doAsync {
