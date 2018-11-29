@@ -3,8 +3,10 @@ package tv.flosports.floandroid
 import android.os.Bundle
 import android.support.design.widget.BottomNavigationView
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.activity_main.*
 import org.jetbrains.anko.doAsync
+import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
@@ -23,13 +25,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun getBasicHttp() {
-        val url = "https://httpbin.org/get"
+        val url = "https://api.flosports.tv/api/mobile/watch?site_id=7"
         val obj = URL(url)
 
         with(obj.openConnection() as HttpURLConnection) {
             // optional default is GET
             requestMethod = "GET"
-
 
             println("\nSending 'GET' request to URL : $url")
             println("Response Code : $responseCode")
@@ -42,7 +43,10 @@ class MainActivity : AppCompatActivity() {
                     response.append(inputLine)
                     inputLine = it.readLine()
                 }
-                println(response.toString())
+                val responseString = response.toString()
+                val responseStringJsonified = JSONObject(responseString)
+                val events = responseStringJsonified["data"]
+                println("the response ${response.toString()}")
                 viewModel.message = "the new message"
                 applyViewModel()
             }
@@ -72,6 +76,11 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        val events: ArrayList<String> = arrayListOf("a", "b", "c")
+        rv_events_list.layoutManager = LinearLayoutManager(this)
+        rv_events_list.adapter = EventAdapter(events, this)
+        println("adapted!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
 
