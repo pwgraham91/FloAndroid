@@ -52,10 +52,11 @@ class WatchVideoActivity : AppCompatActivity() {
 
     private lateinit var mMediaSession: MediaSessionCompat
 
-    private fun configurefullscreen_content() {
 
-        fullscreen_content.setVideoPath(
-            "https://player.ooyala.com/hls/player/all/9pc3QzZTE6RmTtAHP2NwAUMwGnWoUMMI/media/4000.m3u8")
+    private fun configurefullscreen_content() {
+        val streamUrl: String = getIntent().getStringExtra("streamUrl")
+
+        fullscreen_content.setVideoPath(streamUrl)
 
         mMediaSession = MediaSessionCompat(this, "media 1").apply {
 
