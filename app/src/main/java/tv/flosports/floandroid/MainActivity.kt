@@ -21,7 +21,7 @@ data class ViewModel(var message: String = "original message", var number: Int =
     var messageVisibility: Int = View.VISIBLE
 }
 
-data class Event(val id: Int, val title: String, val imageUrl: String? = null, val streamId: String)
+data class Event(val id: Int, val title: String, val imageUrl: String? = null, val streamId: String, val isLive: Boolean)
 
 class MainActivity : AppCompatActivity() {
     private val viewModel = ViewModel()
@@ -34,7 +34,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun getViewTabData(): Array<Event> {
+    private fun getViewTabData(): Array<Event> {
         val url = "https://api.flosports.tv/api/mobile/watch?site_id=7"
         val obj = URL(url)
 
@@ -56,14 +56,12 @@ class MainActivity : AppCompatActivity() {
                 val responseString = response.toString()
                 val responseStringJsonified = JSONObject(responseString)
                 val featured = (((responseStringJsonified["meta"] as JSONObject)["extra"] as JSONArray)[2] as JSONObject)["featured"] as JSONObject
-                // todo run parser for liveEvents
-                val liveEvents = featured["live_events"] as JSONArray
-                val videos = featured["videos"] as JSONArray
                 val events: MutableList<Event> = ArrayList()
+                try {
+                    val videos = featured["videos"] as JSONArray
 
-                for (i in 0 until videos.length()) {
-                    val video = videos[i] as JSONObject
-                    try {
+                    for (i in 0 until videos.length()) {
+                        val video = videos[i] as JSONObject
                         val associations = (video["node"] as JSONObject)["associations"]
                         val streamId =
                             ((((((associations as JSONArray)[0] as JSONObject)["current_revision"] as JSONObject)["live_event"] as JSONObject)["stream_list"] as JSONArray)[0] as JSONObject)["stream_id"] as String
@@ -71,11 +69,30 @@ class MainActivity : AppCompatActivity() {
                         val title: String = video["title"] as String
                         val imageUrl = (video["asset"] as JSONObject)["url"] as? String
 
-                        val event = Event(id, title, imageUrl, streamId)
+                        val event = Event(id, title, imageUrl, streamId, false)
                         events.add(event)
-                    } catch (e: JSONException) { }
+                    }
                 }
-                return events.toTypedArray()
+                catch (e: JSONException) { }
+                catch (e: ClassCastException) { }
+
+                try {
+                    val liveEvents = featured["live_events"] as JSONArray
+
+                    for (i in 0 until liveEvents.length()) {
+                        val video = liveEvents[i] as JSONObject
+                        val streamId = (((video["live_event"] as JSONObject)["stream_list"] as JSONArray)[0] as JSONObject)["stream_id"] as String
+                        val id: Int = video["id"] as Int
+                        val title: String = video["title"] as String
+                        val imageUrl = (video["asset"] as JSONObject)["url"] as? String
+
+                        val event = Event(id, title, imageUrl, streamId, true)
+                        events.add(event)
+                    }
+
+                } catch (e: JSONException) { }
+
+            return events.toTypedArray()
             }
         }
     }
@@ -104,7 +121,7 @@ class MainActivity : AppCompatActivity() {
     private fun initRecyclerView(eventList: Array<Event>) {
         this.runOnUiThread {
             viewManager = LinearLayoutManager(this)
-            viewAdapter = MyAdapter(eventList)
+            viewAdapter = MyAdapter(eventList, this)
 
             recyclerView = findViewById<RecyclerView>(R.id.my_recycler_view).apply {
                 // use this setting to improve performance if you know that changes
