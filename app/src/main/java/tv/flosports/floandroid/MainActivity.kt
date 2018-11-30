@@ -35,7 +35,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getViewTabData(): Array<Event> {
-        val url = "https://api.flosports.tv/api/mobile/watch?site_id=7"
+        val url = "https://api.flosports.tv/api/mobile/watch?site_id=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,41"
         val obj = URL(url)
 
         with(obj.openConnection() as HttpURLConnection) {
@@ -81,7 +81,12 @@ class MainActivity : AppCompatActivity() {
 
                     for (i in 0 until liveEvents.length()) {
                         val video = liveEvents[i] as JSONObject
-                        val streamId = (((video["live_event"] as JSONObject)["stream_list"] as JSONArray)[0] as JSONObject)["stream_id"] as String
+                        val stream = ((video["live_event"] as JSONObject)["stream_list"] as JSONArray)[0] as JSONObject
+                        val active = stream["stream_active"] as Boolean
+                        if (!active) {
+                            continue
+                        }
+                        val streamId = stream["stream_id"] as String
                         val id: Int = video["id"] as Int
                         val title: String = video["title"] as String
                         val imageUrl = (video["asset"] as JSONObject)["url"] as? String
