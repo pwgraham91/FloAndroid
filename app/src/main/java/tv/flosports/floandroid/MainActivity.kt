@@ -81,8 +81,10 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        setContentView(R.layout.activity_main)
+
         viewManager = LinearLayoutManager(this)
-        viewAdapter = MyAdapter(myDataset)
+        viewAdapter = MyAdapter(arrayOf<String>("a", "b", "c"))
 
         recyclerView = findViewById<RecyclerView>(R.id.my_recycler_view).apply {
             // use this setting to improve performance if you know that changes
