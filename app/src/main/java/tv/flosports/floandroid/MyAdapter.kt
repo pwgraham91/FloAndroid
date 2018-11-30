@@ -1,5 +1,6 @@
 package tv.flosports.floandroid
 
+import android.graphics.Color
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -30,6 +31,9 @@ class MyAdapter(private val myDataset: Array<Event>) :
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
         holder.textView.text = myDataset[position].title
+        holder.textView.setOnClickListener {
+            holder.textView.setTextColor(Color.GREEN)
+        }
     }
 
     // Return the size of your dataset (invoked by the layout manager)

@@ -9,6 +9,7 @@ import android.view.View
 import kotlinx.android.synthetic.main.activity_main.*
 import org.jetbrains.anko.doAsync
 import org.json.JSONArray
+import org.json.JSONException
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -20,7 +21,7 @@ data class ViewModel(var message: String = "original message", var number: Int =
     var messageVisibility: Int = View.VISIBLE
 }
 
-data class Event(val id: Int, val node_id: Int, val title: String, val type: String, val image_url: String? = null)
+data class Event(val id: Int, val title: String, val imageUrl: String? = null, val streamId: String)
 
 class MainActivity : AppCompatActivity() {
     private val viewModel = ViewModel()
@@ -54,19 +55,25 @@ class MainActivity : AppCompatActivity() {
                 }
                 val responseString = response.toString()
                 val responseStringJsonified = JSONObject(responseString)
-                val eventsData = responseStringJsonified["data"]
+                val featured = (((responseStringJsonified["meta"] as JSONObject)["extra"] as JSONArray)[2] as JSONObject)["featured"] as JSONObject
+                // todo run parser for liveEvents
+                val liveEvents = featured["live_events"] as JSONArray
+                val videos = featured["videos"] as JSONArray
                 val events: MutableList<Event> = ArrayList()
 
-                for (i in 0 until (eventsData as JSONArray).length()) {
-                    val eventData = (eventsData[i] as JSONObject)
-                    val id: Int = eventData["id"] as Int
-                    val nodeId: Int = eventData["node_id"] as Int
-                    val title: String = eventData["title"] as String
-                    val type: String = eventData["type"] as String
-                    val imageUrl = (eventData["asset"] as JSONObject)["url"] as? String
+                for (i in 0 until videos.length()) {
+                    val video = videos[i] as JSONObject
+                    try {
+                        val associations = (video["node"] as JSONObject)["associations"]
+                        val streamId =
+                            ((((((associations as JSONArray)[0] as JSONObject)["current_revision"] as JSONObject)["live_event"] as JSONObject)["stream_list"] as JSONArray)[0] as JSONObject)["stream_id"] as String
+                        val id: Int = video["id"] as Int
+                        val title: String = video["title"] as String
+                        val imageUrl = (video["asset"] as JSONObject)["url"] as? String
 
-                    val event = Event(id, nodeId, title, type, imageUrl)
-                    events.add(event)
+                        val event = Event(id, title, imageUrl, streamId)
+                        events.add(event)
+                    } catch (e: JSONException) { }
                 }
                 return events.toTypedArray()
             }
