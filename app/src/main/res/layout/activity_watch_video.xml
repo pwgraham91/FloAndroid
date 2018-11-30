@@ -9,7 +9,7 @@
     <!-- The primary full-screen view. This can be replaced with whatever view
          is needed to present your content, e.g. VideoView, SurfaceView,
          TextureView, etc. -->
-    <TextView android:id="@+id/fullscreen_content"
+    <VideoView android:id="@+id/fullscreen_content"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:keepScreenOn="true"
@@ -42,9 +42,6 @@
                     android:text="@string/dummy_button"/>
 
         </LinearLayout>
-        <VideoView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" android:id="@+id/videoView"/>
     </FrameLayout>
 
 </FrameLayout>

@@ -3,6 +3,9 @@ package tv.flosports.floandroid
 import android.os.Bundle
 import android.os.Handler
 import android.support.v4.app.NavUtils
+import android.support.v4.media.session.MediaControllerCompat
+import android.support.v4.media.session.MediaSessionCompat
+import android.support.v4.media.session.PlaybackStateCompat
 import android.support.v7.app.AppCompatActivity
 import android.view.MenuItem
 import android.view.View
@@ -47,13 +50,41 @@ class WatchVideoActivity : AppCompatActivity() {
         false
     }
 
-    private fun configureVideoView() {
+    private lateinit var mMediaSession: MediaSessionCompat
 
-        videoView.setVideoPath(
-            "https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8")
+    private fun configurefullscreen_content() {
 
-        videoView.start()
+        fullscreen_content.setVideoPath(
+            "https://player.ooyala.com/hls/player/all/9pc3QzZTE6RmTtAHP2NwAUMwGnWoUMMI/media/4000.m3u8")
+
+        mMediaSession = MediaSessionCompat(this, "media 1").apply {
+
+            // Enable callbacks from MediaButtons and TransportControls
+            setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or
+                    MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS)
+
+            // Do not let MediaButtons restart the player when the app is not visible
+            setMediaButtonReceiver(null)
+
+            // Set an initial PlaybackState with ACTION_PLAY, so media buttons can start the player
+            val stateBuilder = PlaybackStateCompat.Builder()
+                .setActions(PlaybackStateCompat.ACTION_PLAY or PlaybackStateCompat.ACTION_PLAY_PAUSE)
+            setPlaybackState(stateBuilder.build())
+
+            // MySessionCallback has methods that handle callbacks from a media controller
+//            setCallback(MySessionCallback())
+        }
+
+        // Create a MediaControllerCompat
+        MediaControllerCompat(this, mMediaSession).also { mediaController ->
+            MediaControllerCompat.setMediaController(this, mediaController)
+        }
+        fullscreen_content.start()
     }
+
+//    private fun MySessionCallback(listener: (() -> MediaSessionCompat.Callback!)){
+//        println("callin back yo")
+//    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,7 +101,7 @@ class WatchVideoActivity : AppCompatActivity() {
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
         dummy_button.setOnTouchListener(mDelayHideTouchListener)
-        configureVideoView()
+        configurefullscreen_content()
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
