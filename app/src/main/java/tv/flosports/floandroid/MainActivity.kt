@@ -78,11 +78,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var viewAdapter: RecyclerView.Adapter<*>
     private lateinit var viewManager: RecyclerView.LayoutManager
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        setContentView(R.layout.activity_main)
-
+    private fun initRecyclerView() {
         viewManager = LinearLayoutManager(this)
         viewAdapter = MyAdapter(arrayOf<String>("a", "b", "c"))
 
@@ -98,6 +94,15 @@ class MainActivity : AppCompatActivity() {
             adapter = viewAdapter
 
         }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        setContentView(R.layout.activity_main)
+
+        initRecyclerView()
+
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
 
         doAsync {
