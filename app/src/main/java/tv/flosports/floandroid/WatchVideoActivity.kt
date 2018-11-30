@@ -47,6 +47,14 @@ class WatchVideoActivity : AppCompatActivity() {
         false
     }
 
+    private fun configureVideoView() {
+
+        videoView.setVideoPath(
+            "https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8")
+
+        videoView.start()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -62,6 +70,7 @@ class WatchVideoActivity : AppCompatActivity() {
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
         dummy_button.setOnTouchListener(mDelayHideTouchListener)
+        configureVideoView()
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
