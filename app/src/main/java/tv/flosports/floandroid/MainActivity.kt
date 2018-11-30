@@ -5,15 +5,22 @@ import android.support.design.widget.BottomNavigationView
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.view.View
 import kotlinx.android.synthetic.main.activity_main.*
 import org.jetbrains.anko.doAsync
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.*
 
-data class ViewModel(var message: String = "original message", var number: Int = 0)
+data class ViewModel(var message: String = "original message", var number: Int = 0) {
+    var messageVisibility: Int = View.VISIBLE
+}
+
+data class Event(val id: Int, val node_id: Int, val title: String, val type: String, val image_url: String? = null)
 
 class MainActivity : AppCompatActivity() {
     private val viewModel = ViewModel()
@@ -22,10 +29,11 @@ class MainActivity : AppCompatActivity() {
         println("${viewModel.message} ${viewModel.number}")
         this.runOnUiThread {
             message.text = viewModel.message
+            message.visibility = viewModel.messageVisibility
         }
     }
 
-    fun getBasicHttp() {
+    fun getViewTabData(): Array<Event> {
         val url = "https://api.flosports.tv/api/mobile/watch?site_id=7"
         val obj = URL(url)
 
@@ -46,10 +54,21 @@ class MainActivity : AppCompatActivity() {
                 }
                 val responseString = response.toString()
                 val responseStringJsonified = JSONObject(responseString)
-                val events = responseStringJsonified["data"]
-                println("the response ${response.toString()}")
-                viewModel.message = "the new message"
-                applyViewModel()
+                val eventsData = responseStringJsonified["data"]
+                val events: MutableList<Event> = ArrayList()
+
+                for (i in 0 until (eventsData as JSONArray).length()) {
+                    val eventData = (eventsData[i] as JSONObject)
+                    val id: Int = eventData["id"] as Int
+                    val nodeId: Int = eventData["node_id"] as Int
+                    val title: String = eventData["title"] as String
+                    val type: String = eventData["type"] as String
+                    val imageUrl = (eventData["asset"] as JSONObject)["url"] as? String
+
+                    val event = Event(id, nodeId, title, type, imageUrl)
+                    events.add(event)
+                }
+                return events.toTypedArray()
             }
         }
     }
@@ -57,9 +76,6 @@ class MainActivity : AppCompatActivity() {
     private val mOnNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener { item ->
         when (item.itemId) {
             R.id.navigation_home -> {
-                doAsync {
-                    getBasicHttp()
-                }
                 return@OnNavigationItemSelectedListener true
             }
             R.id.navigation_dashboard -> {
@@ -78,21 +94,25 @@ class MainActivity : AppCompatActivity() {
     private lateinit var viewAdapter: RecyclerView.Adapter<*>
     private lateinit var viewManager: RecyclerView.LayoutManager
 
-    private fun initRecyclerView() {
-        viewManager = LinearLayoutManager(this)
-        viewAdapter = MyAdapter(arrayOf<String>("a", "b", "c"))
+    private fun initRecyclerView(eventList: Array<Event>) {
+        this.runOnUiThread {
+            viewManager = LinearLayoutManager(this)
+            viewAdapter = MyAdapter(eventList)
 
-        recyclerView = findViewById<RecyclerView>(R.id.my_recycler_view).apply {
-            // use this setting to improve performance if you know that changes
-            // in content do not change the layout size of the RecyclerView
-            setHasFixedSize(true)
+            recyclerView = findViewById<RecyclerView>(R.id.my_recycler_view).apply {
+                // use this setting to improve performance if you know that changes
+                // in content do not change the layout size of the RecyclerView
+                setHasFixedSize(true)
 
-            // use a linear layout manager
-            layoutManager = viewManager
+                // use a linear layout manager
+                layoutManager = viewManager
 
-            // specify an viewAdapter (see also next example)
-            adapter = viewAdapter
+                // specify an viewAdapter (see also next example)
+                adapter = viewAdapter
 
+                viewModel.messageVisibility = View.INVISIBLE
+                applyViewModel()
+            }
         }
     }
 
@@ -101,14 +121,15 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_main)
 
-        initRecyclerView()
 
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
 
         doAsync {
             viewModel.message = "on create message"
             applyViewModel()
-            getBasicHttp()
+            val events = getViewTabData()
+            initRecyclerView(events)
+
         }
     }
 }

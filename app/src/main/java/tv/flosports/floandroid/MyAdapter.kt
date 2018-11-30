@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.TextView
 
-class MyAdapter(private val myDataset: Array<String>) :
+class MyAdapter(private val myDataset: Array<Event>) :
     RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
 
     // Provide a reference to the views for each data item
@@ -29,7 +29,7 @@ class MyAdapter(private val myDataset: Array<String>) :
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
-        holder.textView.text = myDataset[position]
+        holder.textView.text = myDataset[position].title
     }
 
     // Return the size of your dataset (invoked by the layout manager)
